@@ -17,6 +17,7 @@ import {
 import { ArtistService } from './artist.service';
 import { ArtistDto } from './update-artist.dto';
 import { AlbumService } from '../albums/album.service';
+import { TrackService } from '../tracks/track.service';
 
 @Controller('artist')
 export class ArtistController {
@@ -24,6 +25,8 @@ export class ArtistController {
     private readonly artistService: ArtistService,
     @Inject(forwardRef(() => AlbumService))
     private readonly albumService: AlbumService,
+    @Inject(forwardRef(() => TrackService))
+    private readonly trackService: TrackService,
   ) {}
 
   @Get()
@@ -69,9 +72,9 @@ export class ArtistController {
 
     if (!ok) throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     this.albumService.nullifyArtist(id);
-    /*
+
     this.trackService.nullifyArtist(id);
-    
+    /*
     this.favoritesService.removeArtist(id);
     */
     return { statusCode: 204 };
