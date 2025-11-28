@@ -58,7 +58,13 @@ export class TrackService {
       }
     });
   }
-
+  nullifyAlbum(albumId: string) {
+    this.tracks.forEach((track) => {
+      if (track.albumId === albumId) {
+        track.albumId = null;
+      }
+    });
+  }
   delete(id: string) {
     const index = this.tracks.findIndex((u) => u.id === id);
     if (index === -1) return false;
