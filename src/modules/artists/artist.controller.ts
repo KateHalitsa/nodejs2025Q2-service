@@ -10,14 +10,21 @@ import {
   HttpStatus,
   ParseUUIDPipe,
   HttpCode,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 
 import { ArtistService } from './artist.service';
 import { ArtistDto } from './update-artist.dto';
+import { AlbumService } from '../albums/album.service';
 
 @Controller('artist')
 export class ArtistController {
-  constructor(private artistService: ArtistService) {}
+  constructor(
+    private readonly artistService: ArtistService,
+    @Inject(forwardRef(() => AlbumService))
+    private readonly albumService: AlbumService,
+  ) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -61,7 +68,12 @@ export class ArtistController {
     const ok = this.artistService.delete(id);
 
     if (!ok) throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-
+    this.albumService.nullifyArtist(id);
+    /*
+    this.trackService.nullifyArtist(id);
+    
+    this.favoritesService.removeArtist(id);
+    */
     return { statusCode: 204 };
   }
 }
