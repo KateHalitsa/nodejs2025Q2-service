@@ -41,15 +41,35 @@ To run only one of all test suites
 
 ```
 npm run test -- <path to suite>
+npm run test -- ./test/albums.e2e.spec.ts
+npm run test -- ./test/users.e2e.spec.ts
+npm run test -- ./test/artists.e2e.spec.ts
+npm run test -- ./test/favorites.e2e.spec.ts
+npm run test -- ./test/tracks.e2e.spec.ts
+
+```
+If tests don't run try (Unix/Linux (bash, zsh):
+```
+rm -rf node_modules package-lock.json 
+npm cache clean --force
+npm i
+```
+Or
+```
+rm -Recurse -Force .\node_modules
+rm -Force .\package-lock.json
+npm cache clean --force
+npm i
+
 ```
 
-To run all test with authorization
+To run all test with authorization (no implementation)
 
 ```
 npm run test:auth
 ```
 
-To run only specific test suite with authorization
+To run only specific test suite with authorization (no implementation)
 
 ```
 npm run test:auth -- <path to suite>
