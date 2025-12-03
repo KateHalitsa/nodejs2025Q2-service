@@ -7,12 +7,14 @@ export class UserService {
   private users: User[] = [];
 
   getAll() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return this.users.map(({ password, ...user }) => user);
   }
 
   getById(id: string) {
     const user = this.users.find((u) => u.id === id);
     if (!user) return null;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...response } = user;
     return response;
   }
@@ -29,6 +31,7 @@ export class UserService {
     };
     this.users.push(newUser);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...response } = newUser;
     return response;
   }
@@ -42,6 +45,7 @@ export class UserService {
     user.version++;
     user.updatedAt = Date.now();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...response } = user;
     return response;
   }
