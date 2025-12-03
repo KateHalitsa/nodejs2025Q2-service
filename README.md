@@ -1,5 +1,15 @@
 # Home Library Service
-
+## Docker
+My username and image names: ekaterinahalitsa/nodejs2025q2-service-backend, ekaterinahalitsa/nodejs2025q2-service-db.
+Script to run it:
+```
+docker pull ekaterinahalitsa/nodejs2025q2-service-backend
+docker run ekaterinahalitsa/nodejs2025q2-service-backend
+```
+```
+docker pull ekaterinahalitsa/nodejs2025q2-service-db
+docker run ekaterinahalitsa/nodejs2025q2-service-db
+```
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
