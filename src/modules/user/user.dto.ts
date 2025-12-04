@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import {Expose, Transform} from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 
 export class CreateUserDto {
   @IsString()
