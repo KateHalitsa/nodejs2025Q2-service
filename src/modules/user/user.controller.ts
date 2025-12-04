@@ -51,23 +51,12 @@ export class UserController {
       dto.oldPassword,
       dto.newPassword,
     );
-
-    if (result === 'not_found')
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
-    if (result === 'wrong_password')
-      throw new HttpException('Old password is wrong', HttpStatus.FORBIDDEN);
-
     return result;
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    const ok = this.userService.delete(id);
-
-    if (!ok) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
-    return { statusCode: 204 };
+    return this.userService.delete(id);
   }
 }

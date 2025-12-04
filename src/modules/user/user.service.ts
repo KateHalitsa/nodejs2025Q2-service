@@ -1,60 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from './user.entity';
-import { v4 as uuid } from 'uuid';
+//import { v4 as uuid } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserResponseDto } from './user.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UserService {
   private users: User[] = [];
-
-  getAll() {
+  constructor(
+    @InjectRepository(User)
+    private readonly repo: Repository<User>,
+  ) {}
+  async getAll() {
+    const users = await this.repo.find();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return this.users.map(({ password, ...user }) => user);
+    return users.map((user) =>
+      plainToInstance(UserResponseDto, user, { excludeExtraneousValues: true }),
+    );
   }
 
-  getById(id: string) {
-    const user = this.users.find((u) => u.id === id);
-    if (!user) return null;
+  async getById(id: string) {
+    const user = await this.repo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...response } = user;
-    return response;
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  create(login: string, password: string) {
-    const timestamp = Date.now();
-    const newUser: User = {
-      id: uuid(),
+  async create(login: string, password: string) {
+    const timestamp = new Date();
+    const newUser = this.repo.create({
       login,
       password,
       version: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
-    };
-    this.users.push(newUser);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...response } = newUser;
-    return response;
+    });
+    await this.repo.save(newUser);
+    return plainToInstance(UserResponseDto, newUser, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  updatePassword(id: string, oldPassword: string, newPassword: string) {
-    const user = this.users.find((u) => u.id === id);
-    if (!user) return 'not_found';
-    if (user.password !== oldPassword) return 'wrong_password';
+  async updatePassword(id: string, oldPassword: string, newPassword: string) {
+    const user = await this.repo.findOneBy({ id });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.password !== oldPassword)
+      throw new ForbiddenException('Old password is wrong');
 
     user.password = newPassword;
     user.version++;
-    user.updatedAt = Date.now();
+    user.updatedAt = new Date();
+    const updated = await this.repo.save(user);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...response } = user;
-    return response;
+    const { password, ...response } = updated;
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  delete(id: string) {
-    const index = this.users.findIndex((u) => u.id === id);
-    if (index === -1) return false;
+  async delete(id: string) {
+    const result = await this.repo.delete(id);
 
-    this.users.splice(index, 1);
-    return true;
+    if (result.affected === 0) throw new NotFoundException('User not found');
   }
 }
