@@ -57,26 +57,20 @@ export class ArtistController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: ArtistDto,
   ) {
-    const result = this.artistService.updateArtist(id, dto.name, dto.grammy);
-
-    if (result === 'not_found')
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-
-    return result;
+    return this.artistService.updateArtist(id, dto.name, dto.grammy);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    const ok = this.artistService.delete(id);
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.artistService.delete(id);
 
-    if (!ok) throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    this.albumService.nullifyArtist(id);
+    await this.albumService.nullifyArtist(id);
 
-    this.trackService.nullifyArtist(id);
+    await this.trackService.nullifyArtist(id);
     /*
     this.favoritesService.removeArtist(id);
     */
-    return { statusCode: 204 };
+    return;
   }
 }

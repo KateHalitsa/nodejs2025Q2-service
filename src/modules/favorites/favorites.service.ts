@@ -16,18 +16,20 @@ export class FavoritesService {
     private readonly trackService: TrackService,
   ) {}
 
-  getAll(): FavoritesResponse {
-    return {
-      artists: this.favorites.artists
-        .map((id) => this.artistService.getById(id))
-        .filter(Boolean),
-      albums: this.favorites.albums
-        .map((id) => this.albumService.getById(id))
-        .filter(Boolean),
-      tracks: this.favorites.tracks
-        .map((id) => this.trackService.getById(id))
-        .filter(Boolean),
-    };
+  async getAll(): Promise<FavoritesResponse> {
+    const artists = await Promise.all(
+      this.favorites.artists.map((id) => this.artistService.getById(id)),
+    ).then((res) => res.filter(Boolean));
+
+    const albums = await Promise.all(
+      this.favorites.albums.map((id) => this.albumService.getById(id)),
+    ).then((res) => res.filter(Boolean));
+
+    const tracks = await Promise.all(
+      this.favorites.tracks.map((id) => this.trackService.getById(id)),
+    ).then((res) => res.filter(Boolean));
+
+    return { artists, albums, tracks };
   }
 
   addArtist(id: string) {

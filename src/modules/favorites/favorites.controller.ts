@@ -16,8 +16,8 @@ export class FavoritesController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAll(): FavoritesResponse {
-    return this.favoritesService.getAll();
+  async getAll(): Promise<FavoritesResponse> {
+    return await this.favoritesService.getAll();
   }
 
   @Post('artist/:id')

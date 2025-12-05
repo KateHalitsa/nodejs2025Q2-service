@@ -1,42 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Artist } from './artist.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import { ArtistResponseDto } from './update-artist.dto';
 
 @Injectable()
 export class ArtistService {
   private artists: Artist[] = [];
-
-  getAll() {
-    return this.artists.map(({ ...artist }) => artist);
+  constructor(
+    @InjectRepository(Artist)
+    private readonly repo: Repository<Artist>,
+  ) {}
+  async getAll() {
+    const artists = await this.repo.find();
+    return plainToInstance(ArtistResponseDto, artists, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  getById(id: string) {
-    const artist = this.artists.find((u) => u.id === id);
-    if (!artist) return null;
-    return artist;
+  async getById(id: string) {
+    const artist = await this.repo.findOne({ where: { id } });
+    if (!artist) throw new NotFoundException('Artist not found');
+
+    return plainToInstance(ArtistResponseDto, artist, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  create(name: string, grammy: boolean) {
-    const newArtists: Artist = {
-      id: uuid(),
+  async create(name: string, grammy: boolean) {
+    const newArtist = this.repo.create({
       name,
       grammy,
-    };
-    this.artists.push(newArtists);
-    return newArtists;
+    });
+    await this.repo.save(newArtist);
+
+    return plainToInstance(ArtistResponseDto, newArtist, {
+      excludeExtraneousValues: true,
+    });
   }
-  updateArtist(id: string, name: string, grammy: boolean) {
-    const artist = this.artists.find((u) => u.id === id);
-    if (!artist) return 'not_found';
+  async updateArtist(id: string, name: string, grammy: boolean) {
+    const artist = await this.repo.findOne({ where: { id } });
+    if (!artist) throw new NotFoundException('Artist not found');
     artist.name = name;
     artist.grammy = grammy;
-    return artist;
-  }
-  delete(id: string) {
-    const index = this.artists.findIndex((u) => u.id === id);
-    if (index === -1) return false;
+    const updated = await this.repo.save(artist);
 
-    this.artists.splice(index, 1);
-    return true;
+    return plainToInstance(ArtistResponseDto, updated, {
+      excludeExtraneousValues: true,
+    });
+  }
+  async delete(id: string) {
+    const result = await this.repo.delete(id);
+    if (result.affected === 0) throw new NotFoundException('Artist not found');
   }
 }
