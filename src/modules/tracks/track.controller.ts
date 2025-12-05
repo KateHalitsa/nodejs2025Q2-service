@@ -21,13 +21,13 @@ export class TrackController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAll() {
+  async getAll() {
     return this.trackService.getAll();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getOne(@Param('id', new ParseUUIDPipe()) id: string) {
+  async getOne(@Param('id', new ParseUUIDPipe()) id: string) {
     const track = this.trackService.getById(id);
     if (!track)
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
@@ -37,21 +37,20 @@ export class TrackController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: TrackDto) {
+  async create(@Body() dto: TrackDto) {
     const result = this.trackService.create(
       dto.name,
       dto.duration,
       dto.artistId,
       dto.albumId,
     );
-    if (result === 'artist_not_found')
-      throw new HttpException('Artist not found', 400);
+
     return result;
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  updatePassword(
+  async updatePassword(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: TrackDto,
   ) {
@@ -62,20 +61,16 @@ export class TrackController {
       dto.artistId,
       dto.albumId,
     );
-
-    if (result === 'not_found')
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-
     return result;
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    const ok = this.trackService.delete(id);
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    const ok = await this.trackService.delete(id);
 
     if (!ok) throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
 
-    return { statusCode: 204 };
+    return;
   }
 }

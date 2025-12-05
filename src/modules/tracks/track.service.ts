@@ -1,75 +1,89 @@
-import { Injectable } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Track } from './track.entity';
 import { ArtistService } from '../artists/artist.service';
+import { AlbumService } from '../albums/album.service';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TrackService {
   private tracks: Track[] = [];
   //private artistService: ArtistService;
-  constructor(private readonly artistService: ArtistService) {}
-  getAll() {
-    return this.tracks.map(({ ...track }) => track);
+  constructor(
+    @InjectRepository(Track)
+    private readonly repo: Repository<Track>,
+    private readonly artistService: ArtistService,
+    private readonly albumService: AlbumService,
+  ) {}
+  async getAll() {
+    return this.repo.find();
   }
 
-  getById(id: string) {
-    const track = this.tracks.find((u) => u.id === id);
-    if (!track) return null;
+  async getById(id: string) {
+    const track = await this.repo.findOne({ where: { id } });
+    if (!track) throw new NotFoundException('Track not found');
     return track;
   }
 
-  create(
+  async create(
     name: string,
     duration: number,
     artistId: string | null,
     albumId: string | null,
   ) {
-    if (artistId && !this.artistService.getById(artistId)) {
-      return 'artist_not_found';
+    if (artistId) {
+      const artist = await this.artistService.getById(artistId);
+      if (!artist) throw new NotFoundException('Artist not found');
     }
-    const newTracks: Track = {
-      id: uuid(),
+
+    if (albumId) {
+      const album = await this.albumService.getById(albumId);
+      if (!album) throw new NotFoundException('Album not found');
+    }
+    const newTrack = this.repo.create({
       name,
       duration,
-      artistId,
-      albumId,
-    };
-    this.tracks.push(newTracks);
-    return newTracks;
+      artistId: artistId || null,
+      albumId: albumId || null,
+    });
+
+    return await this.repo.save(newTrack);
   }
-  updateTrack(
+  async updateTrack(
     id: string,
     name: string,
     duration: number,
     albumId: string | null,
     artistId: string | null,
   ) {
-    const track = this.tracks.find((u) => u.id === id);
-    if (!track) return 'not_found';
+    const track = await this.getById(id);
+    if (!track) throw new NotFoundException('Track not found');
+
+    if (artistId) {
+      const artist = await this.artistService.getById(artistId);
+      if (!artist) throw new NotFoundException('Artist not found');
+    }
+
+    if (albumId) {
+      const album = await this.albumService.getById(albumId);
+      if (!album) throw new NotFoundException('Album not found');
+    }
+
     track.name = name;
     track.duration = duration;
-    track.artistId = artistId;
-    return track;
+    track.artistId = artistId || null;
+    track.albumId = albumId || null;
+    return await this.repo.save(track);
   }
-  nullifyArtist(artistId: string) {
-    this.tracks.forEach((track) => {
-      if (track.artistId === artistId) {
-        track.artistId = null;
-      }
-    });
+  async nullifyArtist(artistId: string) {
+    await this.repo.update({ artistId }, { artistId: null });
   }
-  nullifyAlbum(albumId: string) {
-    this.tracks.forEach((track) => {
-      if (track.albumId === albumId) {
-        track.albumId = null;
-      }
-    });
+  async nullifyAlbum(albumId: string) {
+    await this.repo.update({ albumId }, { albumId: null });
   }
-  delete(id: string) {
-    const index = this.tracks.findIndex((u) => u.id === id);
-    if (index === -1) return false;
-
-    this.tracks.splice(index, 1);
+  async delete(id: string) {
+    const result = await this.repo.delete(id);
+    if (result.affected === 0) return false;
     return true;
   }
 }
