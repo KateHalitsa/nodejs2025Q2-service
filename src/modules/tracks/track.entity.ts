@@ -17,4 +17,3 @@ export class Track {
   @Column({ type: 'uuid', nullable: true })
   albumId: string | null;
 }
-

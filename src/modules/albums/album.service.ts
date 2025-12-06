@@ -1,57 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { Album } from './album.entity';
 import { ArtistService } from '../artists/artist.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AlbumService {
   private albums: Album[] = [];
   //private artistService: ArtistService;
-  constructor(private readonly artistService: ArtistService) {}
+  constructor(
+    @InjectRepository(Album)
+    private readonly repo: Repository<Album>,
+    private readonly artistService: ArtistService,
+  ) {}
   getAll() {
-    return this.albums.map(({ ...album }) => album);
+    return this.repo.find();
   }
 
-  getById(id: string) {
-    const album = this.albums.find((u) => u.id === id);
-    if (!album) return null;
+  async getById(id: string) {
+    const album = await this.repo.findOne({ where: { id } });
+    if (!album) throw new NotFoundException('Track not found');
     return album;
   }
 
-  create(name: string, year: number, artistId: string | null) {
-    if (artistId && !this.artistService.getById(artistId)) {
-      return 'artist_not_found';
+  async create(name: string, year: number, artistId: string | null) {
+    if (artistId) {
+      const artist = await this.artistService.getById(artistId);
+      if (!artist) throw new NotFoundException('Artist not found');
     }
-    const newAlbums: Album = {
+    const newAlbums = this.repo.create({
       id: uuid(),
       name,
       year,
       artistId,
-    };
-    this.albums.push(newAlbums);
-    return newAlbums;
+    });
+    return await this.repo.save(newAlbums);
   }
-  updateAlbum(id: string, name: string, year: number, artistId: string | null) {
-    const album = this.albums.find((u) => u.id === id);
-    if (!album) return 'not_found';
+  async updateAlbum(
+    id: string,
+    name: string,
+    year: number,
+    artistId: string | null,
+  ) {
+    const album = await this.getById(id);
+    if (!album) throw new NotFoundException('Track not found');
+    if (artistId) {
+      const artist = await this.artistService.getById(artistId);
+      if (!artist) throw new NotFoundException('Artist not found');
+    }
     album.name = name;
     album.year = year;
-    album.artistId = artistId;
-    return album;
+    album.artistId = artistId || null;
+    return await this.repo.save(album);
   }
-  nullifyArtist(artistId: string) {
-    this.albums.forEach((album) => {
-      if (album.artistId === artistId) {
-        album.artistId = null;
-      }
-    });
+  async nullifyArtist(artistId: string) {
+    await this.repo.update({ artistId }, { artistId: null });
   }
 
-  delete(id: string) {
-    const index = this.albums.findIndex((u) => u.id === id);
-    if (index === -1) return false;
-
-    this.albums.splice(index, 1);
+  async delete(id: string) {
+    const result = await this.repo.delete(id);
+    if (result.affected === 0) return false;
     return true;
   }
 }

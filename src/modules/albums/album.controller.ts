@@ -28,13 +28,13 @@ export class AlbumController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAll() {
+  async getAll() {
     return this.albumService.getAll();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getOne(@Param('id', new ParseUUIDPipe()) id: string) {
+  async getOne(@Param('id', new ParseUUIDPipe()) id: string) {
     const album = this.albumService.getById(id);
     if (!album)
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
@@ -44,16 +44,14 @@ export class AlbumController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() dto: AlbumDto) {
+  async create(@Body() dto: AlbumDto) {
     const result = this.albumService.create(dto.name, dto.year, dto.artistId);
-    if (result === 'artist_not_found')
-      throw new HttpException('Artist not found', 400);
     return result;
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  updatePassword(
+  async updatePassword(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: AlbumDto,
   ) {
@@ -63,21 +61,17 @@ export class AlbumController {
       dto.year,
       dto.artistId,
     );
-
-    if (result === 'not_found')
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-
     return result;
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    const ok = this.albumService.delete(id);
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    const ok = await this.albumService.delete(id);
 
     if (!ok) throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    this.trackService.nullifyAlbum(id);
+    await this.trackService.nullifyAlbum(id);
 
-    return { statusCode: 204 };
+    return;
   }
 }
