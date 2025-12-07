@@ -15,92 +15,127 @@ export class FavoritesService {
     private readonly albumService: AlbumService,
     private readonly trackService: TrackService,
   ) {}
-
   async getAll(): Promise<FavoritesResponse> {
     const artists = await Promise.all(
-      this.favorites.artists.map((id) => this.artistService.getById(id)),
+      this.favorites.artists.map(async (id) => {
+        try {
+          return await this.artistService.getById(id);
+        } catch {
+          return null;
+        }
+      }),
     ).then((res) => res.filter(Boolean));
 
     const albums = await Promise.all(
-      this.favorites.albums.map((id) => this.albumService.getById(id)),
+      this.favorites.albums.map(async (id) => {
+        try {
+          return await this.albumService.getById(id);
+        } catch {
+          return null;
+        }
+      }),
     ).then((res) => res.filter(Boolean));
 
     const tracks = await Promise.all(
-      this.favorites.tracks.map((id) => this.trackService.getById(id)),
+      this.favorites.tracks.map(async (id) => {
+        try {
+          return await this.trackService.getById(id);
+        } catch {
+          return null;
+        }
+      }),
     ).then((res) => res.filter(Boolean));
 
     return { artists, albums, tracks };
   }
-
-  addArtist(id: string) {
-    if (!validate(id))
+  async addArtist(id: string) {
+    if (!validate(id)) {
       throw new HttpException('Invalid artistId', HttpStatus.BAD_REQUEST);
+    }
 
-    const artist = this.artistService.getById(id);
-    if (!artist)
+    try {
+      await this.artistService.getById(id);
+    } catch {
       throw new HttpException(
         'Artist does not exist',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
+    }
 
-    if (!this.favorites.artists.includes(id)) this.favorites.artists.push(id);
+    if (!this.favorites.artists.includes(id)) {
+      this.favorites.artists.push(id);
+    }
   }
-
-  removeArtist(id: string) {
-    if (!validate(id))
+  async removeArtist(id: string) {
+    if (!validate(id)) {
       throw new HttpException('Invalid artistId', HttpStatus.BAD_REQUEST);
+    }
 
-    if (!this.favorites.artists.includes(id))
+    if (!this.favorites.artists.includes(id)) {
       throw new HttpException('Artist not in favorites', HttpStatus.NOT_FOUND);
+    }
 
-    this.favorites.artists = this.favorites.artists.filter((a) => a !== id);
+    this.favorites.artists = this.favorites.artists.filter((x) => x !== id);
   }
-
-  addAlbum(id: string) {
-    if (!validate(id))
+  async addAlbum(id: string) {
+    if (!validate(id)) {
       throw new HttpException('Invalid albumId', HttpStatus.BAD_REQUEST);
+    }
 
-    const album = this.albumService.getById(id);
-    if (!album)
+    try {
+      await this.albumService.getById(id);
+    } catch {
       throw new HttpException(
         'Album does not exist',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
+    }
 
-    if (!this.favorites.albums.includes(id)) this.favorites.albums.push(id);
+    if (!this.favorites.albums.includes(id)) {
+      this.favorites.albums.push(id);
+    }
   }
 
-  removeAlbum(id: string) {
-    if (!validate(id))
+  async removeAlbum(id: string) {
+    if (!validate(id)) {
       throw new HttpException('Invalid albumId', HttpStatus.BAD_REQUEST);
+    }
 
-    if (!this.favorites.albums.includes(id))
+    if (!this.favorites.albums.includes(id)) {
       throw new HttpException('Album not in favorites', HttpStatus.NOT_FOUND);
+    }
 
-    this.favorites.albums = this.favorites.albums.filter((a) => a !== id);
+    this.favorites.albums = this.favorites.albums.filter((x) => x !== id);
   }
 
-  addTrack(id: string) {
-    if (!validate(id))
+  async addTrack(id: string) {
+    if (!validate(id)) {
       throw new HttpException('Invalid trackId', HttpStatus.BAD_REQUEST);
+    }
 
-    const track = this.trackService.getById(id);
-    if (!track)
+    try {
+      await this.trackService.getById(id);
+    } catch {
       throw new HttpException(
         'Track does not exist',
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
+    }
 
-    if (!this.favorites.tracks.includes(id)) this.favorites.tracks.push(id);
+    if (!this.favorites.tracks.includes(id)) {
+      this.favorites.tracks.push(id);
+    }
   }
 
-  removeTrack(id: string) {
-    if (!validate(id))
+  async removeTrack(id: string) {
+    if (!validate(id)) {
       throw new HttpException('Invalid trackId', HttpStatus.BAD_REQUEST);
+    }
 
-    if (!this.favorites.tracks.includes(id))
+    if (!this.favorites.tracks.includes(id)) {
       throw new HttpException('Track not in favorites', HttpStatus.NOT_FOUND);
+    }
 
-    this.favorites.tracks = this.favorites.tracks.filter((t) => t !== id);
+    this.favorites.tracks = this.favorites.tracks.filter((x) => x !== id);
   }
 }
