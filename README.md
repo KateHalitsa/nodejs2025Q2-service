@@ -1,5 +1,28 @@
 # Home Library Service
+## Docker(Part 2)
+To start Docker I used (also make sure that nothing):
+```
+docker-compose build
+docker-compose up
+```
+or
+```
+docker-compose up --build -d
+```
+then you can run tests
 
+## DockerHub
+My username and image names: ekaterinahalitsa/nodejs2025q2-service-backend, ekaterinahalitsa/nodejs2025q2-service-db.
+Script to run it:
+```
+docker pull ekaterinahalitsa/nodejs2025q2-service-backend
+docker run ekaterinahalitsa/nodejs2025q2-service-backend
+```
+```
+docker pull ekaterinahalitsa/nodejs2025q2-service-db
+docker run ekaterinahalitsa/nodejs2025q2-service-db
+```
+## (Part 1)
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
@@ -41,15 +64,35 @@ To run only one of all test suites
 
 ```
 npm run test -- <path to suite>
+npm run test -- ./test/albums.e2e.spec.ts
+npm run test -- ./test/users.e2e.spec.ts
+npm run test -- ./test/artists.e2e.spec.ts
+npm run test -- ./test/favorites.e2e.spec.ts
+npm run test -- ./test/tracks.e2e.spec.ts
+
+```
+If tests don't run try (Unix/Linux (bash, zsh):
+```
+rm -rf node_modules package-lock.json 
+npm cache clean --force
+npm i
+```
+Or
+```
+rm -Recurse -Force .\node_modules
+rm -Force .\package-lock.json
+npm cache clean --force
+npm i
+
 ```
 
-To run all test with authorization
+To run all test with authorization (no implementation)
 
 ```
 npm run test:auth
 ```
 
-To run only specific test suite with authorization
+To run only specific test suite with authorization (no implementation)
 
 ```
 npm run test:auth -- <path to suite>

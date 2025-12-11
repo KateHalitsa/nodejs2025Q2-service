@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  db:
+    build:
+      context: ./postgres
+    container_name: music_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - db_logs:/var/log/postgresql
+    networks:
+      - custom_net
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+    container_name: music_backend
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+    networks:
+      - custom_net
+    ports:
+      - "4000:4000"
+
+networks:
+  custom_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  db_logs:
