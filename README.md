@@ -1,5 +1,13 @@
 # Home Library Service
-## Docker
+## Docker(Part 2)
+To start Docker I used (also make sure that nothing):
+```
+docker-compose build
+docker-compose up
+```
+then you can run tests
+
+## DockerHub
 My username and image names: ekaterinahalitsa/nodejs2025q2-service-backend, ekaterinahalitsa/nodejs2025q2-service-db.
 Script to run it:
 ```
@@ -10,6 +18,7 @@ docker run ekaterinahalitsa/nodejs2025q2-service-backend
 docker pull ekaterinahalitsa/nodejs2025q2-service-db
 docker run ekaterinahalitsa/nodejs2025q2-service-db
 ```
+## (Part 1)
 ## Prerequisites
 
 - Git - [Download & Install Git](https://git-scm.com/downloads).
