@@ -5,6 +5,10 @@ To start Docker I used (also make sure that nothing):
 docker-compose build
 docker-compose up
 ```
+or
+```
+docker-compose up --build -d
+```
 then you can run tests
 
 ## DockerHub
