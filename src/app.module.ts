@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 /*import { AppController } from './app.controller';
 import { AppService } from './app.service';
 */
@@ -8,11 +8,12 @@ import { AlbumModule } from './modules/albums/album.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { LoggingMiddleware } from './modules/logger/logging.middleware';
+import { LoggingService } from './modules/logger/logging.service';
 /*import {AppController} from "./app.controller";*/
 @Module({
   imports: [
     UserModule,
-    ArtistModule,
     ArtistModule,
     AlbumModule,
     FavoritesModule,
@@ -33,5 +34,10 @@ import { ConfigModule } from '@nestjs/config';
   ],
   /*controllers: [AppController],
   providers: [UserModule],*/
+  providers: [LoggingService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggingMiddleware).forRoutes('*'); // подключаем middleware для всех роутов
+  }
+}

@@ -73,4 +73,7 @@ export class UserService {
 
     if (result.affected === 0) throw new NotFoundException('User not found');
   }
+  findByLogin(login: string) {
+    return this.users.find((u) => u.login === login);
+  }
 }
